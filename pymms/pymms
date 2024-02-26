@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys,os,time, random
 from optparse import OptionParser
 from pymms import pymms
