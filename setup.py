@@ -16,7 +16,7 @@ setup(
     description='python xmms inspired media player/recorder',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=find_packages(),
+    packages=['pymms'],
     install_requires=[
         'pydub',
         'pyte',
