@@ -2,13 +2,13 @@ import sys,os,pydub,time, random
 from optparse import OptionParser
 np=None
 try:
-    from driver_sounddevice_audio import driver_sounddevice_audio
+    from pymms.driver_sounddevice_audio import driver_sounddevice_audio
     au=driver_sounddevice_audio()
     import numpy as np
     from scipy import signal as sp
 except:
     print('missing sounddevice, numpy or scipy libraries.')
-    from driver_termux_audio import driver_termux_audio
+    from pymms.driver_termux_audio import driver_termux_audio
     au=driver_termux_audio()
 from pydub import AudioSegment
 

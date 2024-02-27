@@ -2,9 +2,9 @@
 
 import sys,os,time, random
 from optparse import OptionParser
-from pymms import pymms
-from termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
-from termcontrol import widgetProgressBar, widgetSlider, widgetButton
+from pymms.pymms import pymms
+from pymms.termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
+from pymms.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 
 """
          0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F

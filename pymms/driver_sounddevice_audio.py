@@ -5,7 +5,7 @@ except:
     pass
 from pydub import AudioSegment
 
-from driver_audio import driver_audio
+from pymms.driver_audio import driver_audio
 
 class driver_sounddevice_audio(driver_audio):
     def __init__(self):

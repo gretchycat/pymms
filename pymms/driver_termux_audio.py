@@ -24,7 +24,7 @@ if not err:
  
 from pydub import AudioSegment
 
-from driver_audio import driver_audio
+from pymms.driver_audio import driver_audio
 
 class driver_termux_audio(driver_audio):
     def __init__(self):
