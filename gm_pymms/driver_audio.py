@@ -1,4 +1,4 @@
-from pymms.Timer import Timer
+from .Timer import Timer
 
 from pydub import AudioSegment
 
