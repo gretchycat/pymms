@@ -8,7 +8,7 @@ shutil.copyfile('gm_pymms/termplayer.py', 'gm_pymms/pymms')
 
 setup(
     name='gm_pymms',
-    version='0.0.1',
+    version='0.0.2',
     license='GPL3',
     url='https://github.com/gretchycat/pymms',
     author='Gretchen Maculo',
