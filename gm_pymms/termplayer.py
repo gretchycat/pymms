@@ -2,7 +2,7 @@
 
 import sys,os,time, random
 from optparse import OptionParser
-from pymms.pymms import pymms
+from gm_pymms.pymms import pymms
 from gm_termcontrol.termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
 from gm_termcontrol.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 
