@@ -1,8 +1,8 @@
 [build-system]
-include = ["pymms"]
+include = ["gm_pymms"]
 requires = [
     "pydub",
-    "pyte",
+    "gm_termcontrol",
     "setuptools>=42",
     "wheel"
 ]

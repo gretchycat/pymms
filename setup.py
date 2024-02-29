@@ -4,10 +4,10 @@ import shutil
 
 with open('README.md') as f:
     long_description = f.read()
-shutil.copyfile('pymms/termplayer.py', 'pymms/pymms')
+shutil.copyfile('gm_pymms/termplayer.py', 'gm_pymms/pymms')
 
 setup(
-    name='pymms',
+    name='gm_pymms',
     version='0.0.1',
     license='GPL3',
     url='https://github.com/gretchycat/pymms',
@@ -19,9 +19,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         'pydub',
-        'pyte',
+        'gm_termcontrol'
     ],
     tests_require=[
     ],
-    scripts=['pymms/pymms']
+    scripts=['gm_pymms/pymms']
 )
