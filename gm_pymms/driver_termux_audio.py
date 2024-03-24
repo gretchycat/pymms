@@ -39,7 +39,6 @@ class driver_termux_audio(driver_audio):
         termux.Microphone.record(fn, rate=fps)
 
     def play(self, start=0, end=0):
-        super().play(start=start, end=end)
         buffer=self.audio.get_array_of_samples()
         if self.lastaction=='':
             if end==0:
@@ -53,6 +52,7 @@ class driver_termux_audio(driver_audio):
             audio_segment.export(play_temp_file)
             self.lastaction='play'
             self.play_file(play_temp_file)
+            super().play(start=start, end=end)
 
     def stop(self):
         if self.lastaction=='play':

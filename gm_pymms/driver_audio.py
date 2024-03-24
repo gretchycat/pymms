@@ -37,8 +37,6 @@ class driver_audio():
         self.timer.start(factor=self.audio.frame_rate, offset=-int(self.get_cursor()/self.audio.frame_rate))
         if end==0:
             pass
-            #return sd.play(buffer[int(start):], self.audio.frame_rate)
-        #return sd.play(buffer[int(start):int(end)], self.audio.frame_rate)
 
     def stop(self):
         #sd.stop()
@@ -153,4 +151,7 @@ class driver_audio():
         if audio_segment.frame_count()>0:
             return audio_segment
         return None
+
+    def noiseFilter(self):
+        filtered_segment = noise_reduction(self.audio, smooth_factor=0.2)
 
