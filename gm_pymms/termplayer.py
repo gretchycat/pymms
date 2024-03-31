@@ -37,7 +37,7 @@ def minsec(s):
     return f'{mins:02d}:{secs:02d}'
 
 class termplayer(widget):
-    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script=""): 
+    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False): 
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
         self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
@@ -64,7 +64,9 @@ class termplayer(widget):
         self.playlist=files
         self.playlistinorder=files.copy()
         self.playListInfo={}
-        self.repeat=False
+        self.repeat=repeat
+        if shuffle:
+            self.shuffle()
         self.mode=mode
         for f in files:
             self.playListInfo[f]=self.mediaInfo(f)
@@ -428,13 +430,16 @@ def main():
     parser=OptionParser(usage="usage: %prog [options] AUDIO_FILES")
     parser.add_option("-r", "--record", action='store_true', dest="record", 
             default=False, help="Record mode.")
+    parser.add_option("-S", "--shuffle", action='store_true', dest="shuffle", 
+            default=False, help="Turn on shuffle.")
+    parser.add_option("-R", "--repeat", action='store_true', dest="repeat", 
+            default=False, help="Turn on repeat.")
     parser.add_option("-v", "--verbose", dest="debug", default="info",
             help="Show debug messages.[debug, info, warning]")
     parser.add_option("-s", dest="script", default="No script was given.",
             help="Script for record mode.")
-    parser.add_option("-x", dest="x", default=1, help="Top left coordinate.")
-    parser.add_option("-y", dest="y", default=1, help="Top left coordinate.")
-
+    parser.add_option("-x", dest="x", default=1, help="Left coordinate.")
+    parser.add_option("-y", dest="y", default=1, help="Top coordinate.")
     (options, args)=parser.parse_args()
     if len(args)==0:
         parser.print_help()
@@ -442,7 +447,9 @@ def main():
     mode='play'
     if options.record:
         mode='record'
-    tp=termplayer(x=int(options.x), y=int(options.y), mode=mode, script=options.script, files=args)
+    tp=termplayer(x=int(options.x), y=int(options.y), mode=mode, 
+                  script=options.script, files=args, 
+                  shuffle=options.shuffle, repeat=options.repeat)
     tp.guiLoop()
     return
 
