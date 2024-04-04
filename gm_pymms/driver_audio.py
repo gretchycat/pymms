@@ -25,14 +25,15 @@ class driver_audio():
     def load(self, filename):
         self.timer.clear()
         self.audio=AudioSegment.from_file(filename)
+        self.filename=filename
         self.setAudioProperties(fps=self.audio.frame_rate,
-            channels=self.audio.channels, sample_width=self.audio.sample_width)
+            channels=self.audio.channels, 
+            sample_width=self.audio.sample_width)
         self.audio_start=0
         return self.audio
 
     def play(self, start=0, end=0):
         self.status=PLAY
-        #buffer=self.audio.get_array_of_samples()
         self.audio_start=self.get_cursor()
         self.timer.start(factor=self.audio.frame_rate, offset=-int(self.get_cursor()/self.audio.frame_rate))
         if end==0:

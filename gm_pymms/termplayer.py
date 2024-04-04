@@ -37,7 +37,7 @@ def minsec(s):
     return f'{mins:02d}:{secs:02d}'
 
 class termplayer(widget):
-    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False): 
+    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False):
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
         self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
@@ -110,13 +110,13 @@ class termplayer(widget):
         buttons=playbuttons
         if mode=='record':
             buttons=recordbuttons
-        else: 
+        else:
             buttons=playbuttons
         self.btn={}
         btnX=2
         btnY=10
         btnW=7
-        btnH=4 
+        btnH=4
         x=0
         for label in buttons:
             if self.icons.get(label):
@@ -134,7 +134,7 @@ class termplayer(widget):
             x+=1
 
     def mediaInfo(self, f):
-        title=f
+        title=os.path.basename(f)
         length=0
         bitrate=0
         quality=0
@@ -240,7 +240,7 @@ class termplayer(widget):
             self.infoBox.feed(self.t.ansicolor(27))
             title=""
             title=f'{self.playlist.index(self.filename)+1}. '
-            if self.playListInfo[self.filename]: 
+            if self.playListInfo[self.filename]:
                 title+=self.playListInfo[self.filename]['title']
                 title+=f' ({minsec(self.playListInfo[self.filename]["length"])})'
             self.infoBox.feed(self.t.gotoxy(1, 1))
@@ -248,7 +248,7 @@ class termplayer(widget):
             quality=0
             bitrate=0
             channels=0
-            if self.playListInfo[self.filename]: 
+            if self.playListInfo[self.filename]:
                 quality=int(self.playListInfo[self.filename]["quality"])
                 bitrate=int(self.playListInfo[self.filename]["bitrate"])
                 channels=int(self.playListInfo[self.filename]["channels"])
@@ -316,11 +316,13 @@ class termplayer(widget):
                     if self.playListInfo[f]:
                         title=f"{self.playListInfo[f]['title']}"
                         tm=f"{minsec(self.playListInfo[f]['length'])}"
+                    else:
+                        title=os.path.basename(title)
                     self.playlistbox.feed(f'{n+startline+1}. {title}')
                     self.playlistbox.feed(f'{self.t.gotoxy(self.w-3-len(tm),n+1)}')
                     self.playlistbox.feed(f'{tm}')
                 else:
-                    self.playlistbox.feed(f'{self.t.gotoxy(1,n+1)} ') 
+                    self.playlistbox.feed(f'{self.t.gotoxy(1,n+1)} ')
             buffer+=self.playlistbox.draw()
         else:
             if self.clearPlayList:
@@ -428,11 +430,11 @@ class termplayer(widget):
 
 def main():
     parser=OptionParser(usage="usage: %prog [options] AUDIO_FILES")
-    parser.add_option("-r", "--record", action='store_true', dest="record", 
+    parser.add_option("-r", "--record", action='store_true', dest="record",
             default=False, help="Record mode.")
-    parser.add_option("-S", "--shuffle", action='store_true', dest="shuffle", 
+    parser.add_option("-S", "--shuffle", action='store_true', dest="shuffle",
             default=False, help="Turn on shuffle.")
-    parser.add_option("-R", "--repeat", action='store_true', dest="repeat", 
+    parser.add_option("-R", "--repeat", action='store_true', dest="repeat",
             default=False, help="Turn on repeat.")
     parser.add_option("-v", "--verbose", dest="debug", default="info",
             help="Show debug messages.[debug, info, warning]")
@@ -447,8 +449,8 @@ def main():
     mode='play'
     if options.record:
         mode='record'
-    tp=termplayer(x=int(options.x), y=int(options.y), mode=mode, 
-                  script=options.script, files=args, 
+    tp=termplayer(x=int(options.x), y=int(options.y), mode=mode,
+                  script=options.script, files=args,
                   shuffle=options.shuffle, repeat=options.repeat)
     tp.guiLoop()
     return
