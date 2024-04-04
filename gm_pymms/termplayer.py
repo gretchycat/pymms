@@ -104,7 +104,7 @@ class termplayer(widget):
         self.playerbox.addWidget(self.slider)
         self.addButtons(mode)
         if play: self.play()
-        if plaaylist: self.togglePlayList()
+        if playlist: self.togglePlayList()
 
     def addButtons(self,mode):
         playbuttons=['prev', 'play/pause', 'stop', 'next', '', 'shuffle', 'repeat', 'playlist', '', 'quit']
