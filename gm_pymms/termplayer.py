@@ -37,7 +37,7 @@ def minsec(s):
     return f'{mins:02d}:{secs:02d}'
 
 class termplayer(widget):
-    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False):
+    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False, play=False):
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
         self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
@@ -103,6 +103,7 @@ class termplayer(widget):
         self.slider=widgetSlider(2, boxHeight+1, self.w-(2*2), 0, self.player.length(), labelType='time' , key='k')
         self.playerbox.addWidget(self.slider)
         self.addButtons(mode)
+        if play: self.play()
 
     def addButtons(self,mode):
         playbuttons=['prev', 'play/pause', 'stop', 'next', '', 'shuffle', 'repeat', 'playlist', '', 'quit']
@@ -430,6 +431,8 @@ class termplayer(widget):
 
 def main():
     parser=OptionParser(usage="usage: %prog [options] AUDIO_FILES")
+    parser.add_option("-p", "--play", action='store_true', dest="play",
+            default=False, help="Play immediately.")
     parser.add_option("-r", "--record", action='store_true', dest="record",
             default=False, help="Record mode.")
     parser.add_option("-S", "--shuffle", action='store_true', dest="shuffle",
@@ -451,7 +454,8 @@ def main():
         mode='record'
     tp=termplayer(x=int(options.x), y=int(options.y), mode=mode,
                   script=options.script, files=args,
-                  shuffle=options.shuffle, repeat=options.repeat)
+                  shuffle=options.shuffle, repeat=options.repeat, 
+                  play=options.play)
     tp.guiLoop()
     return
 
