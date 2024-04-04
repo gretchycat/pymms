@@ -37,7 +37,7 @@ def minsec(s):
     return f'{mins:02d}:{secs:02d}'
 
 class termplayer(widget):
-    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False, play=False):
+    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False, play=False, playlist=False):
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
         self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
@@ -104,6 +104,7 @@ class termplayer(widget):
         self.playerbox.addWidget(self.slider)
         self.addButtons(mode)
         if play: self.play()
+        if plaaylist: self.togglePlayList()
 
     def addButtons(self,mode):
         playbuttons=['prev', 'play/pause', 'stop', 'next', '', 'shuffle', 'repeat', 'playlist', '', 'quit']
@@ -439,6 +440,8 @@ def main():
             default=False, help="Turn on shuffle.")
     parser.add_option("-R", "--repeat", action='store_true', dest="repeat",
             default=False, help="Turn on repeat.")
+    parser.add_option("-L", "--list", action='store_true', dest="playlist",
+            default=False, help="show playlist.") 
     parser.add_option("-v", "--verbose", dest="debug", default="info",
             help="Show debug messages.[debug, info, warning]")
     parser.add_option("-s", dest="script", default="No script was given.",
@@ -455,7 +458,8 @@ def main():
     tp=termplayer(x=int(options.x), y=int(options.y), mode=mode,
                   script=options.script, files=args,
                   shuffle=options.shuffle, repeat=options.repeat, 
-                  play=options.play)
+                  play=options.play, 
+                  playlist=options.playlist and not options.record)
     tp.guiLoop()
     return
 
