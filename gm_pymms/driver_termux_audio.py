@@ -61,7 +61,8 @@ class driver_termux_audio(driver_audio):
         if self.lastaction=='play':
             self.lastaction=''
             termux.Media.control("stop")
-            os.remove(play_temp_file)
+            if os.path.exists(play_temp_file):
+                os.remove(play_temp_file)
         elif self.lastaction=='record':
             self.lastaction=''
             termux.Microphone.stop()
