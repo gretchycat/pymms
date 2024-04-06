@@ -42,10 +42,11 @@ class driver_termux_audio(driver_audio):
         buffer=self.audio.get_array_of_samples()
         if self.lastaction=='':
             if start>0 or end>0:
+                ch=self.audio.channels
                 if end==0:
-                    buf=buffer[int(start):]
+                    buf=buffer[int(start*ch):]
                 else:
-                    buf=buffer[int(start):int(end)]
+                    buf=buffer[int(start*ch):int(end*ch)]
                 audio_segment = pydub.AudioSegment(buf,
                     frame_rate=self.audio.frame_rate, 
                     sample_width=self.audio.sample_width, 
