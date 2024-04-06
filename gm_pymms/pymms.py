@@ -29,7 +29,7 @@ class pymms:
     def load(self, filename):
         self.stop()
         audio=au.load(filename)
-        return {'title':filename, 'length':audio.duration_seconds, 
+        return {'title':os.path.basename(filename), 'length':audio.duration_seconds, 
                 'bitrate':audio.frame_rate, 'quality':audio.sample_width, 
                 'channels':audio.channels}
 
