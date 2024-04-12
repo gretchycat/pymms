@@ -36,8 +36,21 @@ def minsec(s):
     secs=int(s%60)
     return f'{mins:02d}:{secs:02d}'
 
+def scroll_string(str, max_length, clock=0):
+    max_index=len(str)-max_length
+    if max_index>0:
+        cl=0
+        cl=int(clock)%(2*max_index)
+        rv=0
+        if cl>max_index:
+            rv=cl-max_index
+        st=int(cl-2*rv)
+        return str[st:st+max_length]
+    return str
+
 class termplayer(widget):
-    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="", repeat=False, shuffle=False, play=False, playlist=False):
+    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="",
+                 repeat=False, shuffle=False, play=False, playlist=False):
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
         self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
@@ -246,7 +259,7 @@ class termplayer(widget):
                 title+=self.playListInfo[self.filename]['title']
                 title+=f' ({minsec(self.playListInfo[self.filename]["length"])})'
             self.infoBox.feed(self.t.gotoxy(1, 1))
-            self.infoBox.feed(title)
+            self.infoBox.feed(scroll_string(title, 38, clock=t))
             quality=0
             bitrate=0
             channels=0
@@ -441,7 +454,7 @@ def main():
     parser.add_option("-R", "--repeat", action='store_true', dest="repeat",
             default=False, help="Turn on repeat.")
     parser.add_option("-L", "--list", action='store_true', dest="playlist",
-            default=False, help="show playlist.") 
+            default=False, help="show playlist.")
     parser.add_option("-v", "--verbose", dest="debug", default="info",
             help="Show debug messages.[debug, info, warning]")
     parser.add_option("-s", dest="script", default="No script was given.",
@@ -457,8 +470,8 @@ def main():
         mode='record'
     tp=termplayer(x=int(options.x), y=int(options.y), mode=mode,
                   script=options.script, files=args,
-                  shuffle=options.shuffle, repeat=options.repeat, 
-                  play=options.play, 
+                  shuffle=options.shuffle, repeat=options.repeat,
+                  play=options.play,
                   playlist=options.playlist and not options.record)
     tp.guiLoop()
     return

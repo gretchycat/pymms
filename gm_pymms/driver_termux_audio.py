@@ -40,6 +40,7 @@ class driver_termux_audio(driver_audio):
 
     def play(self, start=0, end=0):
         buffer=self.audio.get_array_of_samples()
+        info=termux.Media.info()
         if self.lastaction=='':
             if start>0 or end>0:
                 ch=self.audio.channels
