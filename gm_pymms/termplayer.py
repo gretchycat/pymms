@@ -101,8 +101,9 @@ class termplayer(widget):
         self.y=y
         self.w=w
         self.h=h
+        sh=termcontrol.get_terminal_size(0)['rows']
         self.playerbox=widgetScreen(self.x, self.y, self.w, self.h, bg=234, fg=15, style='outside')
-        self.playlistbox=widgetScreen(self.x, self.y+self.h, self.w, self.h, bg=234, fg=15, style='outside')
+        self.playlistbox=widgetScreen(self.x, self.y+self.h, self.w, sh-self.h, bg=234, fg=15, style='outside')
         self.addWidget(self.playerbox)
         self.addWidget(self.playlistbox)
         boxHeight=7
@@ -314,11 +315,11 @@ class termplayer(widget):
         if self.showPlayList:
             self.playlistbox.feed(f'{self.t.clear()}')
             startline=self.playlist.index(self.filename)
-            if startline+self.h-3>len(self.playlist):
-                startline=len(self.playlist)-(self.h-2)
+            if startline+self.playlistbox.h-3>len(self.playlist):
+                startline=len(self.playlist)-(self.playlistbox.h-2)
             if startline<0:
                 startline=0
-            for n in range(self.h-2):
+            for n in range(self.playlistbox.h-2):
                 color=27
                 if n+startline<len(self.playlist):
                     f=self.playlist[startline+n]
@@ -333,7 +334,7 @@ class termplayer(widget):
                         tm=f"{minsec(self.playListInfo[f]['length'])}"
                     else:
                         title=os.path.basename(title)
-                    self.playlistbox.feed(f'{n+startline+1}. {title}')
+                    self.playlistbox.feed(f'{n+startline+1}. {scroll_string(title, 67, clock=t)}')
                     self.playlistbox.feed(f'{self.t.gotoxy(self.w-3-len(tm),n+1)}')
                     self.playlistbox.feed(f'{tm}')
                 else:
@@ -343,7 +344,7 @@ class termplayer(widget):
             if self.clearPlayList:
                 self.clearPlayList=False
                 buffer+=self.t.reset()
-                for y in range(self.y+self.h,self.y+2*self.h):
+                for y in range(self.y+self.h,self.y+self.h+self.playlistbox.h):
                     buffer+=self.t.gotoxy(self.x, y)
                     for x in range(0, self.w):
                         buffer+=' '
