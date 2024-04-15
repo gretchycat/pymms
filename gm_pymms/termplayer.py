@@ -378,8 +378,9 @@ class termplayer(widget):
         i+=1
         if i>=len(self.playlist):
             i=0
+        p=self.player.au.status
         self.load(self.playlist[i])
-        if self.mode=='play':
+        if p==PLAY:
             self.play()
 
     def prev(self):
@@ -387,8 +388,9 @@ class termplayer(widget):
         i-=1
         if i<0:
             i=len(self.playlist)-1
+        p=self.player.au.status
         self.load(self.playlist[i])
-        if self.mode=='play':
+        if p==PLAY:
             self.play()
 
     def endHandler(self):
@@ -424,26 +426,18 @@ class termplayer(widget):
         pass
 
     def play(self):
-        self.mode='play'
         self.player.play()
 
     def pause(self):
-        self.mode=''
         self.player.pause()
 
     def playpause(self):
-        if self.mode=='play':
-            self.mode=''
-        elif self.mode=='':
-            self.mode='play'
         self.player.playpause()
 
     def stop(self):
-        self.mode=''
         self.player.stop()
 
     def record(self):
-        self.mode='record'
         self.player.record()
 
     def denoise(self):

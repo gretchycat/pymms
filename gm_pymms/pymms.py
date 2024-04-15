@@ -26,6 +26,13 @@ class pymms:
         self.stop()
         self.au=au
 
+    def status(self):
+        if au.status==PLAY:
+            return 'play'
+        if au.status==RECORF:
+            return 'record'
+        return ''
+
     def load(self, filename):
         self.stop()
         audio=au.load(filename)
