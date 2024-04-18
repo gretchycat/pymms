@@ -341,7 +341,7 @@ class termplayer(widget):
                         title=os.path.basename(title)
                     PL_line_length=self.playlistbox.w-4-len(f' {tm}')-len(f'{n+startline+1}. ')
                     self.playlistbox.feed(f'{n+startline+1}. {scroll_string(title, PL_line_length, clock=0)}')
-                    self.playlistbox.feed(f'{self.t.gotoxy(self.w-3-len(tm),n+1)}')
+                    self.playlistbox.feed(f'{self.t.gotoxy(self.playlistbox.w-3-len(tm), n+1)}')
                     self.playlistbox.feed(f'{tm}')
                 else:
                     self.playlistbox.feed(f'{self.t.gotoxy(1,n+1)} ')
@@ -364,6 +364,7 @@ class termplayer(widget):
 
     def togglePlayList(self):
         self.showPlayList=not self.showPlayList
+        self.playlistbuffer=''
         if not self.showPlayList:
             self.clearPlayList=True
 
@@ -486,7 +487,13 @@ def main():
                   shuffle=options.shuffle, repeat=options.repeat,
                   play=options.play,
                   playlist=options.playlist and not options.record)
+    tp.kb.disable_keyboard_echo()
+    print(tp.t.disable_cursor(), end='')
+    print(tp.t.disable_mouse(), end='')
     tp.guiLoop()
+    tp.kb.enable_keyboard_echo()
+    print(tp.t.enable_cursor(), end='')
+    print(tp.t.enable_mouse(), end='')
     return
 
 if __name__ == "__main__":
