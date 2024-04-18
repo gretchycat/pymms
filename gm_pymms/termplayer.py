@@ -51,6 +51,7 @@ def scroll_string(str, max_length, clock=0):
 class termplayer(widget):
     def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="",
                  repeat=False, shuffle=False, play=False, playlist=False):
+        self.go=False
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
         self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
@@ -382,7 +383,11 @@ class termplayer(widget):
             if(1):
                 self.save(self.filename)
         self.stop()
-        quit()
+        if self.go:
+            self.go=False
+        else:
+            pass
+            #quit()
 
     def next(self):
         i=self.playlist.index(self.filename)
