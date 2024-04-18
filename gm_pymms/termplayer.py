@@ -78,6 +78,8 @@ class termplayer(widget):
         self.playlistinorder=files.copy()
         self.playListInfo={}
         self.repeat=repeat
+        self.playlistbuffer=''
+        self.playerbuffer=''
         if shuffle:
             self.shuffle()
         self.mode=mode
@@ -311,7 +313,10 @@ class termplayer(widget):
         self.timeBox.feed(self.t.gotoxy(1, 5))
         self.timeBox.feed(self.t.ansicolor(scolor, 233, bold=True))
         self.timeBox.feed(i['label'])
-        buffer+=self.playerbox.draw()
+        playerbuffer=self.playerbox.draw()
+        if playerbuffer!=self.playerbuffer:
+            buffer+=playerbuffer
+            self.playerbuffer=playerbuffer
         if self.showPlayList:
             self.playlistbox.feed(f'{self.t.clear()}')
             startline=self.playlist.index(self.filename)
@@ -334,12 +339,17 @@ class termplayer(widget):
                         tm=f"{minsec(self.playListInfo[f]['length'])}"
                     else:
                         title=os.path.basename(title)
-                    self.playlistbox.feed(f'{n+startline+1}. {scroll_string(title, 67, clock=t)}')
+                    PL_line_length=self.playlistbox.w-4-len(f' {tm}')-len(f'{n+startline+1}. ')
+                    self.playlistbox.feed(f'{n+startline+1}. {scroll_string(title, PL_line_length, clock=0)}')
                     self.playlistbox.feed(f'{self.t.gotoxy(self.w-3-len(tm),n+1)}')
                     self.playlistbox.feed(f'{tm}')
                 else:
                     self.playlistbox.feed(f'{self.t.gotoxy(1,n+1)} ')
-            buffer+=self.playlistbox.draw()
+
+            playlistbuffer=self.playlistbox.draw()
+            if playlistbuffer!=self.playlistbuffer:
+                buffer+=playlistbuffer
+                self.playlistbuffer=playlistbuffer
         else:
             if self.clearPlayList:
                 self.clearPlayList=False
