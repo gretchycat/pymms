@@ -4,7 +4,7 @@ import shutil
 
 with open('README.md') as f:
     long_description = f.read()
-shutil.copyfile('gm_pymms/termplayer.py', 'gm_pymms/pymms')
+shutil.copyfile('gm_pymms/__main__.py', 'gm_pymms/pymms')
 
 setup(
     name='gm_pymms',
@@ -17,11 +17,10 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=find_packages(),
-    install_requires=[
-        'pydub',
-        'gm_termcontrol'
-    ],
-    tests_require=[
-    ],
+    install_requires=[ 'pydub', 'gm_termcontrol' ],
+    extras_require={ 'sounddevice': [ 'sounddevice', 'numpy' ],
+                     'termux': [ 'termux-api' ],
+                     'pyaudio': [ 'pyaudio' ] },
+    tests_require=[],
     scripts=['gm_pymms/pymms']
 )

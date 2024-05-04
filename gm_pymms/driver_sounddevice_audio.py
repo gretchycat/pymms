@@ -18,7 +18,7 @@ class driver_sounddevice_audio(driver_audio):
             return sd.play(buffer[int(start):],
                            samplerate=self.audio.frame_rate*self.audio.channels)
         return sd.play(buffer[int(start):int(end)],
-                       samplerate=self.audio.frame_rate)
+                       samplerate=self.audio.frame_rate*self.audio.channels)
 
     def stop(self):
         sd.stop()

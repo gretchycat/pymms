@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import sys,os,time, random
-from optparse import OptionParser
 from gm_termcontrol.termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
 from gm_termcontrol.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 from gm_pymms.pymms import pymms
@@ -48,31 +47,10 @@ def scroll_string(str, max_length, clock=0):
         return str[st:st+max_length]
     return str
 
-class termplayer(widget):
-    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="",
+class interface():
+    def __init__(self, mode='play', files=[], script="",
                  repeat=False, shuffle=False, play=False, playlist=False):
         self.go=False
-        self.icons={}
-        self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
-        self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
-        self.icons['next']     = {"label":'\u23ed',   "key":']', 'action':self.next}
-        self.icons['next']     = {"label":'\u25b6'*2+'\u25ae', "key":']', 'action':self.next}
-        self.icons['play']     = {"label":'\u25b6',   "key":'P', 'action':self.play}
-        self.icons['pause']    = {"label":'\u25ae'*2, "key":'p', 'action':self.pause}
-        self.icons['play/pause']={"label":'\u25b6'+'\u25ae'*2, "key":'p', 'action':self.playpause}
-        self.icons['stop']     = {"label":'\u25a0',   "key":'s', 'action':self.stop}
-        self.icons['record']   = {"label":'\u25cf',   "key":'r', 'action':self.record}
-        self.icons['eject']    = {"label":'\u23cf',   "key":'j', 'action':self.eject}
-        self.icons['shuffle']  = {"label":'\u292e',   "key":'S', 'action':self.shuffle}
-        self.icons['repeat']   = {"label":'\u21bb',   "key":'R', 'action':self.repeat}
-        self.icons['seek']     = {"label":'',         "key":'k', 'action':self.seek}
-        self.icons['seek-']    = {"label":'\u25c0'*2, "key":'-', 'action':self.seekBack}
-        self.icons['seek+']    = {"label":'\u25b6'*2, "key":'+', 'action':self.seekFwd}
-        self.icons['playlist'] = {"label":'\u2263',   "key":'L', 'action':self.togglePlayList}
-        self.icons['denoise']  = {"label":'\u2593\u2592\u2591', "key":'N', 'action':self.denoise}
-        self.icons['normalize']= {"label":'\u224b',   "key":'Z', 'action':self.normalize}
-        self.icons['quit']=      {"label":'Quit',     "key":'q', 'action':self.quit}
-        super().__init__(x=x, y=y, w=w, h=h)
         self.showPlayList=False
         self.clearPlayList=False
         self.playlist=files
@@ -98,6 +76,144 @@ class termplayer(widget):
         if self.mode=='play':
             self.load(self.filename)
         self.script=script
+        if play: self.play()
+        if playlist: self.togglePlayList()
+
+    def mediaInfo(self, f): #generic
+        title=os.path.basename(f)
+        length=0
+        bitrate=0
+        quality=0
+        channels=1
+        info={'title':title, 'length':length, 'bitrate':bitrate, 'quality':quality, 'channels':channels}
+        self.playListInfo[f]=info
+        return info
+
+    def togglePlayList(self):   #generic
+        self.showPlayList=not self.showPlayList
+        self.playlistbuffer=''
+        if not self.showPlayList:
+            self.clearPlayList=True
+
+    def load(self, filename):    #generic:
+        info=self.player.load(filename)
+        self.playListInfo[filename]=info
+        self.filename=filename
+
+    def save(self, filename):
+        self.player.save(filename)#generic
+
+    def quit(self): #generic
+        if self.mode=='record':
+            #TODO save prompt
+            if(1):
+                self.save(self.filename)
+        self.stop()
+        if self.go:
+            self.go=False
+        else:
+            pass
+            #quit()
+
+    def next(self):
+        i=self.playlist.index(self.filename)
+        i+=1
+        if i>=len(self.playlist):
+            i=0
+        p=self.player.au.status
+        self.load(self.playlist[i])
+        if p==PLAY:
+            self.play()
+
+    def prev(self):
+        i=self.playlist.index(self.filename)
+        i-=1
+        if i<0:
+            i=len(self.playlist)-1
+        p=self.player.au.status
+        self.load(self.playlist[i])
+        if p==PLAY:
+            self.play()
+
+    def endHandler(self):
+        if self.player.au.status==PLAY:
+            if self.mode=='play':
+                if self.repeat:
+                    self.stop()
+                    self.play()
+                else:
+                    self.next()
+            else:
+                self.player.pause()
+
+    def shuffle(self):
+        if self.playlist==self.playlistinorder:
+            random.shuffle(self.playlist)
+        else:
+            self.playlist=self.playlistinorder.copy()
+
+    def repeat(self):
+        self.repeat = not self.repeat
+
+    def seek(self, pos=0):
+        self.player.seek_time(pos)
+
+    def seekFwd(self):
+        self.player.seekFwd_time(10)
+
+    def seekBack(self):
+        self.player.seekBack_time(10)
+
+    def eject(self):
+        pass
+
+    def play(self):
+        self.player.play()
+
+    def pause(self):
+        self.player.pause()
+
+    def playpause(self):
+        self.player.playpause()
+
+    def stop(self):
+        self.player.stop()
+
+    def record(self):
+        self.player.record()
+
+    def denoise(self):
+        self.player.denoise()
+
+    def normalize(self):
+        self.player.normalize()
+
+class interface_ansi(interface, widget):
+    def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="",
+                 repeat=False, shuffle=False, play=False, playlist=False):
+        interface.__init__(self, mode=mode, files=files, script=script, repeat=repeat, 
+                         shuffle=shuffle, play=play, playlist=playlist)
+        self.icons={}
+        self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
+        self.icons['prev']     = {"label":'\u25ae'+'\u25c0'*2, "key":'[', 'action':self.prev}
+        self.icons['next']     = {"label":'\u23ed',   "key":']', 'action':self.next}
+        self.icons['next']     = {"label":'\u25b6'*2+'\u25ae', "key":']', 'action':self.next}
+        self.icons['play']     = {"label":'\u25b6',   "key":'P', 'action':self.play}
+        self.icons['pause']    = {"label":'\u25ae'*2, "key":'p', 'action':self.pause}
+        self.icons['play/pause']={"label":'\u25b6'+'\u25ae'*2, "key":'p', 'action':self.playpause}
+        self.icons['stop']     = {"label":'\u25a0',   "key":'s', 'action':self.stop}
+        self.icons['record']   = {"label":'\u25cf',   "key":'r', 'action':self.record}
+        self.icons['eject']    = {"label":'\u23cf',   "key":'j', 'action':self.eject}
+        self.icons['shuffle']  = {"label":'\u292e',   "key":'S', 'action':self.shuffle}
+        self.icons['repeat']   = {"label":'\u21bb',   "key":'R', 'action':self.repeat}
+        self.icons['seek']     = {"label":'',         "key":'k', 'action':self.seek}
+        self.icons['seek-']    = {"label":'\u25c0'*2, "key":'-', 'action':self.seekBack}
+        self.icons['seek+']    = {"label":'\u25b6'*2, "key":'+', 'action':self.seekFwd}
+        self.icons['playlist'] = {"label":'\u2263',   "key":'L', 'action':self.togglePlayList}
+        self.icons['denoise']  = {"label":'\u2593\u2592\u2591', "key":'N', 'action':self.denoise}
+        self.icons['normalize']= {"label":'\u224b',   "key":'Z', 'action':self.normalize}
+        self.icons['quit']=      {"label":'Quit',     "key":'q', 'action':self.quit}
+        widget.__init__(self, x=x, y=y, w=w, h=h) 
         self.frame=0
         self.anim="\\-/|"
         self.x=x
@@ -120,10 +236,8 @@ class termplayer(widget):
         self.slider=widgetSlider(2, boxHeight+1, self.w-(2*2), 0, self.player.length(), labelType='time' , key='k')
         self.playerbox.addWidget(self.slider)
         self.addButtons(mode)
-        if play: self.play()
-        if playlist: self.togglePlayList()
 
-    def addButtons(self,mode):
+    def addButtons(self,mode): #interface_ansi
         playbuttons=['prev', 'play/pause', 'stop', 'next', '', 'shuffle', 'repeat', 'playlist', '', 'quit']
         recordbuttons=['seek-', 'play/pause', 'stop', 'record', 'seek+', '', 'denoise', 'normalize', '', 'quit']
         buttons=playbuttons
@@ -152,17 +266,7 @@ class termplayer(widget):
                 self.playerbox.addWidget(self.btn[label])
             x+=1
 
-    def mediaInfo(self, f):
-        title=os.path.basename(f)
-        length=0
-        bitrate=0
-        quality=0
-        channels=1
-        info={'title':title, 'length':length, 'bitrate':bitrate, 'quality':quality, 'channels':channels}
-        self.playListInfo[f]=info
-        return info
-
-    def drawBigString(self, s):
+    def drawBigString(self, s): #interface_ansi
         chars={}
         chars['Resolution']='5x4'
         chars['0']= " ▄▄  "\
@@ -227,7 +331,7 @@ class termplayer(widget):
             buffer+='\n'
         return buffer
 
-    def drawMultiLine(self, x, y, s):
+    def drawMultiLine(self, x, y, s):   #interface_ansi
         lines=s.split('\n')
         dy=0
         buffer=""
@@ -237,7 +341,7 @@ class termplayer(widget):
             dy=dy+1
         return buffer
 
-    def draw(self):
+    def draw(self): #interface_ansi
         t=self.player.get_cursor_time()
         self.slider.setValue(t)
         self.slider.setMax(max(self.player.length_time(), t))
@@ -253,7 +357,6 @@ class termplayer(widget):
             self.infoBox.feed(self.t.gotoxy(1, 1))
             self.infoBox.feed(self.t.ansicolor(27))
             self.infoBox.feed(self.script)
-            pass
         elif self.mode=='play':
             self.infoBox.feed(self.t.clear())
             self.infoBox.feed(self.t.ansicolor(27))
@@ -363,143 +466,4 @@ class termplayer(widget):
         self.frame +=1
         return buffer
 
-    def togglePlayList(self):
-        self.showPlayList=not self.showPlayList
-        self.playlistbuffer=''
-        if not self.showPlayList:
-            self.clearPlayList=True
 
-    def load(self, filename):
-        info=self.player.load(filename)
-        self.playListInfo[filename]=info
-        self.filename=filename
-
-    def save(self, filename):
-        self.player.save(filename)
-
-    def quit(self):
-        if self.mode=='record':
-            #TODO save prompt
-            if(1):
-                self.save(self.filename)
-        self.stop()
-        if self.go:
-            self.go=False
-        else:
-            pass
-            #quit()
-
-    def next(self):
-        i=self.playlist.index(self.filename)
-        i+=1
-        if i>=len(self.playlist):
-            i=0
-        p=self.player.au.status
-        self.load(self.playlist[i])
-        if p==PLAY:
-            self.play()
-
-    def prev(self):
-        i=self.playlist.index(self.filename)
-        i-=1
-        if i<0:
-            i=len(self.playlist)-1
-        p=self.player.au.status
-        self.load(self.playlist[i])
-        if p==PLAY:
-            self.play()
-
-    def endHandler(self):
-        if self.player.au.status==PLAY:
-            if self.mode=='play':
-                if self.repeat:
-                    self.stop()
-                    self.play()
-                else:
-                    self.next()
-            else:
-                self.player.pause()
-
-    def shuffle(self):
-        if self.playlist==self.playlistinorder:
-            random.shuffle(self.playlist)
-        else:
-            self.playlist=self.playlistinorder.copy()
-
-    def repeat(self):
-        self.repeat = not self.repeat
-
-    def seek(self, pos=0):
-        self.player.seek_time(pos)
-
-    def seekFwd(self):
-        self.player.seekFwd_time(10)
-
-    def seekBack(self):
-        self.player.seekBack_time(10)
-
-    def eject(self):
-        pass
-
-    def play(self):
-        self.player.play()
-
-    def pause(self):
-        self.player.pause()
-
-    def playpause(self):
-        self.player.playpause()
-
-    def stop(self):
-        self.player.stop()
-
-    def record(self):
-        self.player.record()
-
-    def denoise(self):
-        self.player.denoise()
-
-    def normalize(self):
-        self.player.normalize()
-
-def main():
-    parser=OptionParser(usage="usage: %prog [options] AUDIO_FILES")
-    parser.add_option("-p", "--play", action='store_true', dest="play",
-            default=False, help="Play immediately.")
-    parser.add_option("-r", "--record", action='store_true', dest="record",
-            default=False, help="Record mode.")
-    parser.add_option("-S", "--shuffle", action='store_true', dest="shuffle",
-            default=False, help="Turn on shuffle.")
-    parser.add_option("-R", "--repeat", action='store_true', dest="repeat",
-            default=False, help="Turn on repeat.")
-    parser.add_option("-L", "--list", action='store_true', dest="playlist",
-            default=False, help="show playlist.")
-    parser.add_option("-v", "--verbose", dest="debug", default="info",
-            help="Show debug messages.[debug, info, warning]")
-    parser.add_option("-s", dest="script", default="No script was given.",
-            help="Script for record mode.")
-    parser.add_option("-x", dest="x", default=1, help="Left coordinate.")
-    parser.add_option("-y", dest="y", default=1, help="Top coordinate.")
-    (options, args)=parser.parse_args()
-    if len(args)==0:
-        parser.print_help()
-        return
-    mode='play'
-    if options.record:
-        mode='record'
-    tp=termplayer(x=int(options.x), y=int(options.y), mode=mode,
-                  script=options.script, files=args,
-                  shuffle=options.shuffle, repeat=options.repeat,
-                  play=options.play,
-                  playlist=options.playlist and not options.record)
-    tp.kb.disable_keyboard_echo()
-    print(tp.t.disable_cursor(), end='')
-    print(tp.t.disable_mouse(), end='')
-    tp.guiLoop()
-    tp.kb.enable_keyboard_echo()
-    print(tp.t.enable_cursor(), end='')
-    print(tp.t.enable_mouse(), end='')
-    return
-
-if __name__ == "__main__":
-    main()
