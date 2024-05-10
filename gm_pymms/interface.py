@@ -1,9 +1,14 @@
 #!/usr/bin/python
 
-import sys,os,time, random
+import sys, os, time, random, zipfile
 from gm_termcontrol.termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
 from gm_termcontrol.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 from gm_pymms.pymms import pymms
+try:
+    from PIL import ImagXe
+except ImportError:
+    sys.stderr.write("You need to install PIL module!\n"
+                     "Defaulting to ansi terminal interface\n")
 
 """
          0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -28,24 +33,6 @@ U+25Fx   ◰   ◱   ◲   ◳   ◴   ◵   ◶   ◷   ◸   ◹   ◺   ◻  
 STOP=0
 PLAY=1
 RECORD=2
-
-def minsec(s):
-    s=int(s)
-    mins=int(s/60)
-    secs=int(s%60)
-    return f'{mins:02d}:{secs:02d}'
-
-def scroll_string(str, max_length, clock=0):
-    max_index=len(str)-max_length
-    if max_index>0:
-        cl=0
-        cl=int(clock)%(2*max_index)
-        rv=0
-        if cl>max_index:
-            rv=cl-max_index
-        st=int(cl-2*rv)
-        return str[st:st+max_length]
-    return str
 
 class interface():
     def __init__(self, mode='play', files=[], script="",
@@ -78,6 +65,24 @@ class interface():
         self.script=script
         if play: self.play()
         if playlist: self.togglePlayList()
+
+    def minsec(self, s):
+        s=int(s)
+        mins=int(s/60)
+        secs=int(s%60)
+        return f'{mins:02d}:{secs:02d}'
+
+    def scroll_string(self, str, max_length, clock=0):
+        max_index=len(str)-max_length
+        if max_index>0:
+            cl=0
+            cl=int(clock)%(2*max_index)
+            rv=0
+            if cl>max_index:
+                rv=cl-max_index
+            st=int(cl-2*rv)
+            return str[st:st+max_length]
+        return str
 
     def mediaInfo(self, f): #generic
         title=os.path.basename(f)
@@ -345,7 +350,7 @@ class interface_ansi(interface, widget):
         t=self.player.get_cursor_time()
         self.slider.setValue(t)
         self.slider.setMax(max(self.player.length_time(), t))
-        timestr=self.drawBigString(minsec(t))
+        timestr=self.drawBigString(self.minsec(t))
         buffer=''
         fg=27
         if self.player.au.status==RECORD:
@@ -364,9 +369,9 @@ class interface_ansi(interface, widget):
             title=f'{self.playlist.index(self.filename)+1}. '
             if self.playListInfo[self.filename]:
                 title+=self.playListInfo[self.filename]['title']
-                title+=f' ({minsec(self.playListInfo[self.filename]["length"])})'
+                title+=f' ({self.minsec(self.playListInfo[self.filename]["length"])})'
             self.infoBox.feed(self.t.gotoxy(1, 1))
-            self.infoBox.feed(scroll_string(title, 38, clock=t))
+            self.infoBox.feed(self.scroll_string(title, 38, clock=t))
             quality=0
             bitrate=0
             channels=0
@@ -440,11 +445,11 @@ class interface_ansi(interface, widget):
                     tm="00:00"
                     if self.playListInfo[f]:
                         title=f"{self.playListInfo[f]['title']}"
-                        tm=f"{minsec(self.playListInfo[f]['length'])}"
+                        tm=f"{self.minsec(self.playListInfo[f]['length'])}"
                     else:
                         title=os.path.basename(title)
                     PL_line_length=self.playlistbox.w-4-len(f' {tm}')-len(f'{n+startline+1}. ')
-                    self.playlistbox.feed(f'{n+startline+1}. {scroll_string(title, PL_line_length, clock=0)}')
+                    self.playlistbox.feed(f'{n+startline+1}. {self.scroll_string(title, PL_line_length, clock=0)}')
                     self.playlistbox.feed(f'{self.t.gotoxy(self.playlistbox.w-3-len(tm), n+1)}')
                     self.playlistbox.feed(f'{tm}')
                 else:
@@ -465,5 +470,17 @@ class interface_ansi(interface, widget):
         #print(self.anim[self.frame % len(self.anim)])
         self.frame +=1
         return buffer
+
+class interface_kitty(interface, widget):
+    def __init__(self):
+        pass
+
+class interface_x(interface, widget):
+    def __init__(self):
+        pass
+
+class interface_auto(interface, widget):
+    def __init__(self):
+        pass
 
 
