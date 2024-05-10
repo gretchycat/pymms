@@ -5,7 +5,7 @@ from gm_termcontrol.termcontrol import termcontrol, pyteLogger, boxDraw, widget,
 from gm_termcontrol.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 from gm_pymms.pymms import pymms
 try:
-    from PIL import ImagXe
+    from PIL import Image
 except ImportError:
     sys.stderr.write("You need to install PIL module!\n"
                      "Defaulting to ansi terminal interface\n")
@@ -65,6 +65,9 @@ class interface():
         self.script=script
         if play: self.play()
         if playlist: self.togglePlayList()
+
+    def loadTemplate(self, fn):
+        pass
 
     def minsec(self, s):
         s=int(s)
