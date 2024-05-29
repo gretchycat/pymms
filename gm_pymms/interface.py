@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, os, time, random, zipfile
+import sys, io, os, time, random, zipfile
 from gm_termcontrol.termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
 from gm_termcontrol.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 from gm_pymms.pymms import pymms
@@ -36,7 +36,8 @@ RECORD=2
 
 class interface():
     def __init__(self, mode='play', files=[], script="",
-                 repeat=False, shuffle=False, play=False, playlist=False):
+                 repeat=False, shuffle=False, play=False, playlist=False, theme="base-2.91.wsz"):
+        self.theme=self.loadTheme(theme)
         self.go=False
         self.showPlayList=False
         self.clearPlayList=False
@@ -52,9 +53,11 @@ class interface():
         for f in files:
             self.playListInfo[f]=self.mediaInfo(f)
         if self.mode=='record':
-            if len(self.playlist)!=1:
+            if len(self.playlist)>1:
                 print("Record mode must reference one audio filename.")
                 exit(1)
+            elif len(self.playlist)==0:
+                self.playlist[0]='pymms_record.mp3'
         else:
             pass
         self.filename=files[0]
@@ -66,8 +69,57 @@ class interface():
         if play: self.play()
         if playlist: self.togglePlayList()
 
-    def loadTemplate(self, fn):
-        pass
+    def loadTheme(self, fn): #TODO case insensitive files
+        def get_info_case_insensitive(zip_file, filename):
+            lowercase_filename = filename.lower()  # Convert filename to lowercase for comparison
+            for info in zip_file.infolist():
+                if info.filename.lower() == lowercase_filename:
+                    return info
+            return None
+
+        def read(zipfile, fn):
+            i=get_info_case_insensitive(zipfile, fn)
+            if i:
+                return zipfile.read(i.filename)
+            return None
+
+        theme={ 'texts':{}, 'images':{}, 'cursors':{} }
+
+        if os.path.exists(fn):
+            if zipfile.is_zipfile(fn):
+                print(f"loading theme: {fn}")
+                with zipfile.ZipFile(fn, 'r') as tf:
+                    texts=["PLEDIT", "REGION", "VISCOLOR"]
+                    images=["BALANCE", "CBUTTONS", "EQ_EX", "EQMAIN", "GEN", "GENEX",
+                            "MAIN", "MB", "MONOSTER", "NUMBERS", "PLAYPAUS", "PLEDIT",
+                            "POSBAR", "SHUFREP", "TEXT", "TITLEBAR", "VIDEO", "VOLUME"]
+                    cursors=["CLOSE", "EQSLID", "EQTITLE", "MAINMENU",
+                             "POSBAR", "PSIZE", "TITLEBAR", "VOLBAL"]
+
+                    for i in texts:
+                        theme['texts'][i.lower()]=read(tf, i+'.txt')
+                    for i in images:
+                        try:
+                            theme['images'][i.lower()]=Image.open(io.BytesIO(read(tf, i+'.bmp'))).convert(mode='RGB')
+                        except ValueError:
+                            theme['images'][i.lower()]=None
+                    for i in cursors:
+                        try:
+                            theme['cursors'][i.lower()]=Image.open(io.BytesIO(read(tf, i+'.cur'))).convert(mode='RGB')
+                        except ValueError:
+                            theme['cursors'][i.lower()]=None
+
+                    if theme['texts']['viscolor']:
+                        theme['viscolor']=[]
+                        colors=theme['texts']['viscolor'].decode('utf-8').split('\n')
+                        for c in colors:
+                            rgb=c.split(',')
+                            if len(rgb)>=3:
+                                r, g, b= int(rgb[0]), int(rgb[1]), int(rgb[2])
+                                theme['viscolor'].append({ 'r':r, 'g':g, 'b':b })
+                    else:
+                        theme['viscolor']=None
+        return theme
 
     def minsec(self, s):
         s=int(s)
@@ -199,7 +251,7 @@ class interface():
 class interface_ansi(interface, widget):
     def __init__(self, x=1, y=1, w=80, h=15, mode='play', files=[], script="",
                  repeat=False, shuffle=False, play=False, playlist=False):
-        interface.__init__(self, mode=mode, files=files, script=script, repeat=repeat, 
+        interface.__init__(self, mode=mode, files=files, script=script, repeat=repeat,
                          shuffle=shuffle, play=play, playlist=playlist)
         self.icons={}
         self.icons['prev']     = {"label":'\u23ee',   "key":'[', 'action':self.prev}
@@ -221,7 +273,7 @@ class interface_ansi(interface, widget):
         self.icons['denoise']  = {"label":'\u2593\u2592\u2591', "key":'N', 'action':self.denoise}
         self.icons['normalize']= {"label":'\u224b',   "key":'Z', 'action':self.normalize}
         self.icons['quit']=      {"label":'Quit',     "key":'q', 'action':self.quit}
-        widget.__init__(self, x=x, y=y, w=w, h=h) 
+        widget.__init__(self, x=x, y=y, w=w, h=h)
         self.frame=0
         self.anim="\\-/|"
         self.x=x
