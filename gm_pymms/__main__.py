@@ -53,6 +53,8 @@ def main():
         print(tp.t.enable_mouse(), end='')
     if options.interface.lower() == 'kitty':
         pass
+    if options.interface.lower() == 'x':
+        pass
     return
 
 if __name__ == "__main__":

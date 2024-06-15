@@ -4,6 +4,7 @@ import sys, io, os, time, random, zipfile
 from gm_termcontrol.termcontrol import termcontrol, pyteLogger, boxDraw, widget, widgetScreen
 from gm_termcontrol.termcontrol import widgetProgressBar, widgetSlider, widgetButton
 from gm_pymms.pymms import pymms
+import configparser
 try:
     from PIL import Image
 except ImportError:
@@ -95,23 +96,60 @@ class interface():
                             "POSBAR", "SHUFREP", "TEXT", "TITLEBAR", "VIDEO", "VOLUME"]
                     cursors=["CLOSE", "EQSLID", "EQTITLE", "MAINMENU",
                              "POSBAR", "PSIZE", "TITLEBAR", "VOLBAL"]
-
+                    boxes={ 'CBUTTONS': {'back': (0,0,22,17), 
+                                         'play': (23,0,45,17),
+                                         'pause':(46,0,68,17),
+                                         'stop': (69,0,91,17),
+                                         'fwd' : (92,0,114,17),
+                                         'eject':(115,0,136,16),
+                                         },
+                            'MAIN':     {'frame': (0,0,275,116)},
+                            'NUMBERS':  {'0': (0,0,9,13),
+                                         '1': (9,0,18,13),
+                                         '2': (18,0,27,13),
+                                         '3': (27,0,36,13),
+                                         '4': (36,0,45,13),
+                                         '5': (45,0,54,13),
+                                         '6': (54,0,63,13),
+                                         '7': (63,0,72,13),
+                                         '8': (72,0,81,13),
+                                         '9': (81,0,90,13),
+                                         ' ': (90,0,99,13),
+                                        },
+                            'POSBAR':   {'down':(279,0,307,10),
+                                         'up':  (249,0,277,10),
+                                        },
+                           }
                     for i in texts:
-                        theme['texts'][i.lower()]=read(tf, i+'.txt')
+                        theme['texts'][i.lower()]={'raw': read(tf, i+'.txt')}
                     for i in images:
                         try:
-                            theme['images'][i.lower()]=Image.open(io.BytesIO(read(tf, i+'.bmp'))).convert(mode='RGB')
+                            raw= Image.open(io.BytesIO(read(tf, i+'.bmp'))).convert(mode='RGB')
+                            theme['images'][i.lower()]={'raw':raw}
+                            if i in boxes:
+                                for n,b in boxes[i].items():
+                                    print(f'{i}.{n}: {b}')
+                                    theme['images'][i.lower()][n]=raw.crop(b)
+                                    theme['images'][i.lower()][n].save(f'{i}.{n}.png')
                         except ValueError:
-                            theme['images'][i.lower()]=None
+                            theme['images'][i.lower()]={'raw': None}
                     for i in cursors:
                         try:
                             theme['cursors'][i.lower()]=Image.open(io.BytesIO(read(tf, i+'.cur'))).convert(mode='RGB')
                         except ValueError:
                             theme['cursors'][i.lower()]=None
-
-                    if theme['texts']['viscolor']:
-                        theme['viscolor']=[]
-                        colors=theme['texts']['viscolor'].decode('utf-8').split('\n')
+                    theme['viscolor']=[]
+                    theme['pledit']={}
+                    if theme['texts']['pledit']['raw']:
+                        ple=configparser.ConfigParser()
+                        ple.read_file(theme['texts']['pledit']['raw'].decode('utf-8').splitlines())
+                        for s in ple.sections():
+                            if s.lower()=="text":
+                                for c in [ 'Normal', 'Current', 'NormalBG', 'SelectedBG' ]:
+                                    theme['pledit'][c]=ple[s][c]
+                                    print(f'{c}: {ple[s][c]}')
+                    if theme['texts']['viscolor']['raw']:
+                        colors=theme['texts']['viscolor']['raw'].decode('utf-8').split('\n')
                         for c in colors:
                             rgb=c.split(',')
                             if len(rgb)>=3:
