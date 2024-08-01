@@ -55,7 +55,7 @@ class driver_termux_audio(driver_audio):
                 audio_segment.export(play_temp_file)
                 self.play_file(play_temp_file)
             else:
-                self.play_file(self.filename)
+                self.play_file(play_temp_file)
             self.lastaction='play'
             super().play(start=start, end=end)
 
@@ -70,7 +70,7 @@ class driver_termux_audio(driver_audio):
             termux.Microphone.stop()
             self.record_audio=AudioSegment.from_file(record_temp_file)
             self.record_buffer=self.record_audio.get_array_of_samples()
-            os.remove(record_temp_file)
+            os.replace(record_temp_file, play_temp_file)
         super().stop()
 
     def rec(self):

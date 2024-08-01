@@ -119,6 +119,13 @@ class interface():
                             'POSBAR':   {'down':(279,0,307,10),
                                          'up':  (249,0,277,10),
                                         },
+                            'PLAYPAUS': {'play': (0,0,9,9),
+                                         'pause':(9,0,9*2,9),
+                                         'stop': (9*2,0,9*3,9),
+                                         'blank':(9*3,0,9*4,9),
+                                         'status_on': (9*4,0,9*4+3,9),
+                                         'status_off':(9*4+3,0,9*4+3*2,9),
+                                        },
                            }
                     for i in texts:
                         theme['texts'][i.lower()]={'raw': read(tf, i+'.txt')}
